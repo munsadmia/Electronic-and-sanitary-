@@ -1,0 +1,886 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মালামাল এস্টিমেটর</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Hind Siliguri', 'Tiro Bangla', sans-serif;
+        }
+        .tab-active {
+            background-color: #2563eb !important;
+            color: white !important;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+        }
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea {
+                display: block !important;
+                position: absolute;
+                left: 0; top: 0;
+                width: 100%;
+                padding: 20px;
+            }
+            .print-only { display: block !important; }
+            .no-print { display: none !important; }
+            body { background: #fff !important; color: #000 !important; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #000 !important; padding: 8px; }
+            thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-blue-700 text-white shadow-lg sticky top-0 z-50 no-print">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-toolbox text-3xl text-blue-200"></i>
+                <div>
+                    <h1 class="text-2xl font-bold">মালামাল এস্টিমেটর</h1>
+                    <p class="text-xs text-blue-200">ইলেকট্রনিক ও স্যানিটারি সলিউশন</p>
+                </div>
+            </div>
+            <div class="relative w-full md:w-96">
+                <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="মালামালের নাম দিয়ে খুঁজুন..." 
+                       class="w-full pl-10 pr-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-inner">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Tabs -->
+    <div class="container mx-auto px-4 pt-6 no-print">
+        <div class="bg-white rounded-xl shadow-md p-2 flex gap-2 max-w-2xl mx-auto">
+            <button id="tabSanitary" onclick="switchMainTab('sanitary')" 
+                    class="flex-1 py-3 px-4 rounded-lg font-bold text-sm md:text-base transition flex items-center justify-center gap-2 tab-active">
+                <i class="fa-solid fa-faucet-drip"></i> স্যানিটারি
+            </button>
+            <button id="tabElectronic" onclick="switchMainTab('electronic')" 
+                    class="flex-1 py-3 px-4 rounded-lg font-bold text-sm md:text-base transition flex items-center justify-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                <i class="fa-solid fa-bolt"></i> ইলেকট্রনিক
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Side: Product List -->
+        <div class="lg:col-span-2 space-y-6 no-print">
+            <!-- স্যানিটারি Category Filter -->
+            <div id="categoryFilterSanitary" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-2">
+                <button onclick="filterCategory('all')" class="cat-btn active bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">সবগুলো</button>
+                <button onclick="filterCategory('৩/৪ থ্রেড')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">৩/৪ থ্রেড</button>
+                <button onclick="filterCategory('১ ইঞ্চি থ্রেড')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">১" থ্রেড</button>
+                <button onclick="filterCategory('শোয়া ইঞ্চি থ্রেড')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">শোয়া ইঞ্চি</button>
+                <button onclick="filterCategory('দের ইঞ্চি থ্রেড')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">দেড় ইঞ্চি</button>
+                <button onclick="filterCategory('২&quot; থ্রেড')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">২" থ্রেড</button>
+                <button onclick="filterCategory('হাফ ইঞ্চি থ্রেড')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">হাফ ইঞ্চি</button>
+                <button onclick="filterCategory('৩/৪ Cpvc')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">৩/৪ CPVC</button>
+                <button onclick="filterCategory('৩/৪ PPR')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">৩/৪ PPR</button>
+                <button onclick="filterCategory('৪&quot;')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">৪"</button>
+                <button onclick="filterCategory('৬&quot;')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">৬"</button>
+                <button onclick="filterCategory('ফিনিশিং')" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">ফিনিশিং</button>
+            </div>
+
+            <!-- ইলেকট্রনিক Category Filter -->
+            <div id="categoryFilterElectronic" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-2" style="display:none;">
+                <button onclick="filterCategory('all')" class="cat-btn-e active bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">সবগুলো</button>
+                <button onclick="filterCategory('কপার তার')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">কপার তার</button>
+                <button onclick="filterCategory('পাইপ ও কন্ডুইট')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">পাইপ ও কন্ডুইট</button>
+                <button onclick="filterCategory('বক্স ও ক্ল্যাম্প')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">বক্স ও ক্ল্যাম্প</button>
+                <button onclick="filterCategory('গ্যাং বক্স')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">গ্যাং বক্স</button>
+                <button onclick="filterCategory('সুইচ ও সকেট')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">সুইচ ও সকেট</button>
+                <button onclick="filterCategory('ডিস্ট্রিবিউশন ও প্রটেকশন')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">ডিস্ট্রিবিউশন</button>
+                <button onclick="filterCategory('লাইট ও ফ্যান')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">লাইট ও ফ্যান</button>
+                <button onclick="filterCategory('আর্থিং')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">আর্থিং</button>
+                <button onclick="filterCategory('সরঞ্জাম')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">সরঞ্জাম</button>
+                <button onclick="filterCategory('নেটওয়ার্ক ও কমিউনিকেশন')" class="cat-btn-e bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">নেটওয়ার্ক</button>
+            </div>
+
+            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Right Side: Summary & Custom Add -->
+        <div class="lg:col-span-1 no-print">
+            <div class="space-y-4 sticky top-24">
+                
+                <!-- Summary Box -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                    <div class="flex justify-between items-center border-b pb-4 mb-4">
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-list text-blue-600"></i> হিসাব তালিকা
+                        </h2>
+                        <span id="totalItemsCount" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">০ টি আইটেম</span>
+                    </div>
+
+                    <div id="summaryList" class="max-h-[40vh] overflow-y-auto space-y-3 pr-1">
+                        <div class="text-center py-8 text-gray-400">
+                            <i class="fa-solid fa-box-open text-4xl mb-2"></i>
+                            <p>এখনো কোনো মালামাল যুক্ত করা হয়নি।</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 border-t pt-4 space-y-2">
+                        <button onclick="window.print()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow">
+                            <i class="fa-solid fa-print"></i> প্রিন্ট / PDF
+                        </button>
+                        <button onclick="clearAll()" class="w-full bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition border border-gray-200">
+                            <i class="fa-solid fa-trash-can"></i> সব মুছে ফেলুন
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Add Box (নিজের ইচ্ছামত লেখার জায়গা) -->
+                <div class="bg-yellow-50 rounded-xl shadow-md p-5 border-2 border-dashed border-yellow-400">
+                    <h3 class="font-bold text-yellow-800 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square"></i> নিজের ইচ্ছামতো যোগ করুন
+                    </h3>
+                    <div class="space-y-3">
+                        <input type="text" id="customName" placeholder="মালামালের নাম লিখুন..." 
+                               class="w-full px-3 py-2 border border-yellow-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none bg-white">
+                        <div class="flex gap-2">
+                            <select id="customUnit" class="w-1/2 px-2 py-2 border border-yellow-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none bg-white">
+                                <option value="পিস">পিস</option>
+                                <option value="টি">টি</option>
+                                <option value="ফুট">ফুট</option>
+                                <option value="মিটার">মিটার</option>
+                                <option value="রোল">রোল</option>
+                                <option value="কেজি">কেজি</option>
+                                <option value="প্যাকেট">প্যাকেট</option>
+                                <option value="বক্স">বক্স</option>
+                            </select>
+                            <input type="number" id="customQty" placeholder="পরিমাণ" value="1" min="1"
+                                   class="w-1/2 px-3 py-2 border border-yellow-300 rounded-lg text-sm text-center focus:ring-2 focus:ring-yellow-500 focus:outline-none bg-white">
+                        </div>
+                        <button onclick="addCustomProduct()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow">
+                            <i class="fa-solid fa-plus"></i> তালিকায় যোগ করুন
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Area -->
+    <div id="printArea">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-900" id="printTitle">স্যানিটারি মালামালের কাজের তালিকা</h1>
+            <p class="text-sm text-gray-600" id="printSubtitle">প্রস্তুতকারী: স্যানিটারি ইঞ্জিনিয়ার</p>
+            <p class="text-xs text-gray-500 mt-1">তারিখ: <span id="printDate"></span></p>
+        </div>
+        <table class="w-full border-collapse border border-gray-300 text-left">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="border border-gray-300 px-4 py-2 text-center w-16">নং</th>
+                    <th class="border border-gray-300 px-4 py-2">মালামালের বিবরণ</th>
+                    <th class="border border-gray-300 px-4 py-2 text-center w-28">পরিমাণ</th>
+                </tr>
+            </thead>
+            <tbody id="printTableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // ==================== স্যানিটারি মালামাল ====================
+        const sanitaryProducts = [
+            { id: "1", name: "৩/৪ পাইব", cat: "৩/৪ থ্রেড" },
+            { id: "2", name: "৩/৪ এলবো", cat: "৩/৪ থ্রেড" },
+            { id: "3", name: "৩/৪ টি", cat: "৩/৪ থ্রেড" },
+            { id: "4", name: "৩/৪ S নিফল", cat: "৩/৪ থ্রেড" },
+            { id: "5", name: "৩/৪ ইউনিয়ন", cat: "৩/৪ থ্রেড" },
+            { id: "6", name: "৩/৪ সকেট", cat: "৩/৪ থ্রেড" },
+            { id: "7", name: "৩/৪ গেইডবল-পিতলের", cat: "৩/৪ থ্রেড" },
+            { id: "8", name: "৩/৪ প্লাগ", cat: "৩/৪ থ্রেড" },
+            { id: "9", name: "৩/৪ কনসেল এস্টকর্ক", cat: "৩/৪ থ্রেড" },
+            { id: "10", name: "৩/৪ অপ সাইড", cat: "৩/৪ থ্রেড" },
+            { id: "11", name: "৩/৪ ক্রস T", cat: "৩/৪ থ্রেড" },
+            { id: "12", name: "৩/৪ ক্লাম", cat: "৩/৪ থ্রেড" },
+            { id: "13", name: "৩/৪ চেকবল", cat: "৩/৪ থ্রেড" },
+            { id: "14", name: "৩/৪ G.I. এলবো", cat: "৩/৪ থ্রেড" },
+            { id: "15", name: "৩/৪ G.I. টি", cat: "৩/৪ থ্রেড" },
+            { id: "16", name: "৩/৪ G.I. S নিফল", cat: "৩/৪ থ্রেড" },
+            { id: "17", name: "৩/৪ G.I. ইউনিয়ন", cat: "৩/৪ থ্রেড" },
+            { id: "18", name: "৩/৪ G.I. সকেট", cat: "৩/৪ থ্রেড" },
+            { id: "19", name: "৩/৪ G.I. প্লাগ", cat: "৩/৪ থ্রেড" },
+            { id: "20", name: "৩/৪ G.I. শর্টপিজ", cat: "৩/৪ থ্রেড" },
+            { id: "21", name: "৩/৪ হাফ ইঞ্চি G.I. টি", cat: "৩/৪ থ্রেড" },
+            { id: "22", name: "৩/৪ হাফ ইঞ্চি এলবো", cat: "৩/৪ থ্রেড" },
+            { id: "23", name: "৩/৪ হাফ ইঞ্চি টি", cat: "৩/৪ থ্রেড" },
+            { id: "24", name: "৩/৪ হাফ ইঞ্চি সকেট", cat: "৩/৪ থ্রেড" },
+            { id: "25", name: "৩/৪ PVC টাংকি পিটিংস", cat: "৩/৪ থ্রেড" },
+            { id: "26", name: "হাফ ইঞ্চি প্লাগ", cat: "৩/৪ থ্রেড" },
+            { id: "27", name: "৩/৪ গেইডবল প্লাস্টিকের", cat: "৩/৪ থ্রেড" },
+            { id: "28", name: "২৫ m.m. ক্লাম", cat: "৩/৪ থ্রেড" },
+            { id: "29", name: "টেপলন টেপ", cat: "৩/৪ থ্রেড" },
+            { id: "30", name: "ওয়াল কাটার ব্লেট", cat: "৩/৪ থ্রেড" },
+            { id: "31", name: "রট কাটার ব্লেট", cat: "৩/৪ থ্রেড" },
+            { id: "32", name: "ডাবল আরি ব্লেট", cat: "৩/৪ থ্রেড" },
+            { id: "33", name: "হেলদি বিট ৬.৫", cat: "৩/৪ থ্রেড" },
+            { id: "34", name: "হেলদি বিট ৪ সুতা ১২", cat: "৩/৪ থ্রেড" },
+            { id: "35", name: "৩/৪ হাফ ইঞ্চি G.I. এলবো", cat: "৩/৪ থ্রেড" },
+            { id: "36", name: "৩/৪ হাফ ইঞ্চি G.I. সকেট", cat: "৩/৪ থ্রেড" },
+            { id: "37", name: "৩/৪ হাফ ইঞ্চি G.I. বুশ", cat: "৩/৪ থ্রেড" },
+            { id: "38", name: "৩/৪ G.I. ক্রসটি", cat: "৩/৪ থ্রেড" },
+            { id: "39", name: "৩/৪ G.I. অপসাইড", cat: "৩/৪ থ্রেড" },
+            { id: "40", name: "১ পাইপ", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "41", name: "১ এলবো", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "42", name: "১ টি", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "43", name: "১ এস নিফল", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "44", name: "১ ইউনিয়ন", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "45", name: "১ গেইডবল পিতলের", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "46", name: "১ গেইডবল প্লাস্টিকের", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "47", name: "১ সকেট", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "48", name: "১ প্লাগ", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "49", name: "১ ক্রসটি", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "50", name: "১ কনসেল এস্টকর্ক", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "51", name: "১ ক্লাম", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "52", name: "১ S.S. স্ক্রুব", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "53", name: "১ ৩/৪ টি", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "54", name: "১ ৩/৪ এলবো", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "55", name: "১ ৩/৪ সকেট", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "56", name: "১ ৩/৪ বুশ", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "57", name: "১ হাফ টি (B)", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "58", name: "১ হাফ ইঞ্চি এলবো", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "59", name: "১ হাফ ইঞ্চি সকেট", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "60", name: "১ হাফ ইঞ্চি বুশ", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "61", name: "১ G.I. এলবো", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "62", name: "১ G.I. টি", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "63", name: "১ G.I. S নিফল", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "64", name: "১ G.I. ইউনিয়ন", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "65", name: "১ G.I. সকেট", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "66", name: "১ G.I. প্লাগ", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "67", name: "১ ৩/৪ G.I. বুশ", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "68", name: "১ ৩/৪ G.I. সকেট", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "69", name: "১ ৩/৪ G.I. টি", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "70", name: "১ ৩/৪ G.I. এলবো", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "71", name: "১ PVC টাংকি পিটিংস", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "72", name: "টেপলন টেপ ১", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "73", name: "টাংকি", cat: "১ ইঞ্চি থ্রেড" },
+            { id: "74", name: "শোয়া ইঞ্চি পাইপ", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "75", name: "শোয়া ইঞ্চি এলবো", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "76", name: "শোয়া ইঞ্চি টি", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "77", name: "শোয়া ইঞ্চি এস নিফল", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "78", name: "শোয়া ইঞ্চি ইউনিয়ন", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "79", name: "শোয়া ইঞ্চি গেইডবল পিতলের", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "80", name: "শোয়া ইঞ্চি গেইডবল প্লাস্টিক", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "81", name: "শোয়া ইঞ্চি সকেট", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "82", name: "শোয়া ইঞ্চি প্লাগ", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "83", name: "শোয়া ইঞ্চি ক্লাম", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "84", name: "শোয়া ইঞ্চি S.S. স্ক্রুব", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "85", name: "শোয়া ইঞ্চি PVC টাংকি", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "86", name: "শোয়া ইঞ্চি G.I. এলবো", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "87", name: "শোয়া ইঞ্চি G.I. টি", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "88", name: "শোয়া ইঞ্চি G.I. S নিফল", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "89", name: "শোয়া ইঞ্চি G.I. ইউনিয়ন", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "90", name: "শোয়া ইঞ্চি G.I. সকেট", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "91", name: "শোয়া ইঞ্চি G.I. প্লাগ", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "92", name: "শোয়া ইঞ্চি ৩/৪ এলবো", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "93", name: "শোয়া ইঞ্চি ৩/৪ টি", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "94", name: "শোয়া ইঞ্চি ৩/৪ সকেট", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "95", name: "শোয়া ইঞ্চি ১ বুশ", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "96", name: "শোয়া ইঞ্চি ৩/৪ বুশ", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "97", name: "শোয়া ইঞ্চি ১/২ টি", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "98", name: "শোয়া ইঞ্চি সাদা পাইপ", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "99", name: "শোয়া ইঞ্চি সাদা বেন", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "100", name: "শোয়া ইঞ্চি সাদা টি", cat: "শোয়া ইঞ্চি থ্রেড" },
+            { id: "101", name: "দেড় ইঞ্চি পাইপ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "102", name: "দেড় ইঞ্চি এলবো", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "103", name: "দেড় ইঞ্চি টি", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "104", name: "দেড় ইঞ্চি এস নিফল", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "105", name: "দেড় ইঞ্চি ইউনিয়ন", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "106", name: "দেড় ইঞ্চি গেইডবল পিতলের", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "107", name: "দেড় ইঞ্চি গেইডবল প্লাস্টিক", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "108", name: "দেড় ইঞ্চি সকেট", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "109", name: "দেড় ইঞ্চি প্লাগ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "110", name: "দেড় ইঞ্চি ক্লাম", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "111", name: "দেড় ইঞ্চি S.S. স্ক্রুব", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "112", name: "দেড় ইঞ্চি PVC টাংকি", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "113", name: "দেড় ইঞ্চি ইসটিল পেরাগ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "114", name: "দেড় ইঞ্চি G.I. এলবো", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "115", name: "দেড় ইঞ্চি G.I. টি", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "116", name: "দেড় ইঞ্চি G.I. S নিফল", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "117", name: "দেড় ইঞ্চি G.I. ইউনিয়ন", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "118", name: "দেড় ইঞ্চি G.I. সকেট", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "119", name: "দেড় ইঞ্চি G.I. প্লাগ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "120", name: "দেড় ইঞ্চি G.I. কেপ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "121", name: "দেড় ইঞ্চি G.I. শর্টপিজ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "122", name: "দেড় ইঞ্চি ৩/৪ G.I. জালাই টি", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "123", name: "দেড় ইঞ্চি ৩/৪ এলবো", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "124", name: "দেড় ইঞ্চি ৩/৪ টি", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "125", name: "দেড় ইঞ্চি ৩/৪ সকেট", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "126", name: "দেড় ইঞ্চি ১ বুশ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "127", name: "দেড় ইঞ্চি ৩/৪ বুশ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "128", name: "দেড় ইঞ্চি ১/২ টি", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "129", name: "দেড় ইঞ্চি কালো পাইপ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "130", name: "দেড় ইঞ্চি কালো বেন", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "131", name: "দেড় ইঞ্চি কালো টি", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "132", name: "দেড় ইঞ্চি সাদা পাইপ", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "133", name: "দেড় ইঞ্চি সাদা বেন", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "134", name: "দেড় ইঞ্চি সাদা টি", cat: "দের ইঞ্চি থ্রেড" },
+            { id: "135", name: "২ পাইপ", cat: "২\" থ্রেড" },
+            { id: "136", name: "২ এলবো", cat: "২\" থ্রেড" },
+            { id: "137", name: "২ টি", cat: "২\" থ্রেড" },
+            { id: "138", name: "২ এস নিফল", cat: "২\" থ্রেড" },
+            { id: "139", name: "২ ইউনিয়ন", cat: "২\" থ্রেড" },
+            { id: "140", name: "২ গেইডবল পিতলের", cat: "২\" থ্রেড" },
+            { id: "141", name: "২ গেইডবল প্লাস্টিকের", cat: "২\" থ্রেড" },
+            { id: "142", name: "২ সকেট", cat: "২\" থ্রেড" },
+            { id: "143", name: "২ প্লাগ", cat: "২\" থ্রেড" },
+            { id: "144", name: "২ ক্লাম", cat: "২\" থ্রেড" },
+            { id: "145", name: "২ চেকবল", cat: "২\" থ্রেড" },
+            { id: "146", name: "২ S.S. স্ক্রুব", cat: "২\" থ্রেড" },
+            { id: "147", name: "২ PVC টাংকি", cat: "২\" থ্রেড" },
+            { id: "148", name: "২ ইসটিল পেরাগ", cat: "২\" থ্রেড" },
+            { id: "149", name: "২ G.I. এলবো", cat: "২\" থ্রেড" },
+            { id: "150", name: "২ G.I. টি", cat: "২\" থ্রেড" },
+            { id: "151", name: "২ G.I. S নিফল", cat: "২\" থ্রেড" },
+            { id: "152", name: "২ G.I. সকেট", cat: "২\" থ্রেড" },
+            { id: "153", name: "২ G.I. প্লাগ", cat: "২\" থ্রেড" },
+            { id: "154", name: "২ G.I. কেপ", cat: "২\" থ্রেড" },
+            { id: "155", name: "২ G.I. ইউনিয়ন", cat: "২\" থ্রেড" },
+            { id: "156", name: "২ G.I. শর্টপিজ", cat: "২\" থ্রেড" },
+            { id: "157", name: "২ ১ G.I. জালাই টি", cat: "২\" থ্রেড" },
+            { id: "158", name: "২ ৩/৪ এলবো", cat: "২\" থ্রেড" },
+            { id: "159", name: "২ ৩/৪ টি", cat: "২\" থ্রেড" },
+            { id: "160", name: "২ ৩/৪ সকেট", cat: "২\" থ্রেড" },
+            { id: "161", name: "২ ৩/৪ বুশ", cat: "২\" থ্রেড" },
+            { id: "162", name: "২ ১ বুশ", cat: "২\" থ্রেড" },
+            { id: "163", name: "২ ১/২ টি", cat: "২\" থ্রেড" },
+            { id: "164", name: "২ ১/২ এলবো", cat: "২\" থ্রেড" },
+            { id: "165", name: "হাফ ইঞ্চি পাইপ", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "166", name: "হাফ ইঞ্চি এলবো", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "167", name: "হাফ ইঞ্চি টি", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "168", name: "হাফ ইঞ্চি এস নিফল", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "169", name: "হাফ ইঞ্চি ইউনিয়ন", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "170", name: "হাফ ইঞ্চি গেইডবল পিতল", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "171", name: "হাফ ইঞ্চি গেইডবল প্লাস্টিক", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "172", name: "হাফ ইঞ্চি সকেট", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "173", name: "হাফ ইঞ্চি প্লাগ", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "174", name: "হাফ ইঞ্চি ক্লাম", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "175", name: "হাফ ইঞ্চি G.I. এলবো", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "176", name: "হাফ ইঞ্চি G.I. টি", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "177", name: "হাফ ইঞ্চি G.I. S নিফল", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "178", name: "হাফ ইঞ্চি G.I. সকেট", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "179", name: "হাফ ইঞ্চি G.I. প্লাগ", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "180", name: "হাফ ইঞ্চি G.I. ইউনিয়ন", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "181", name: "হাফ S.S বুশ 10 mm", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "182", name: "হাফ S.S বুশ 15 mm", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "183", name: "হাফ G.I. বুশ", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "184", name: "হাফ নন রিটান বাল্ব", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "185", name: "হাফ পেসার বাল্ব", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "186", name: "হাফ কালেকশন পাইব", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "187", name: "হাফ G.I. কালেকশন পাইব", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "188", name: "হাফ বেসিং মিক্সার কালেকশন", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "189", name: "হাফ শর্টপিজ", cat: "হাফ ইঞ্চি থ্রেড" },
+            { id: "190", name: "৩/৪ পাইব (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "191", name: "৩/৪ এলবো (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "192", name: "৩/৪ টি (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "193", name: "৩/৪ সকেট (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "194", name: "৩/৪ ইউনিয়ন (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "195", name: "৩/৪ গেইডবল (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "196", name: "৩/৪ কেপ (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "197", name: "৩/৪ ফিমেল সকেট (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "198", name: "৩/৪ মেল সকেট (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "199", name: "৩/৪ হাফ ফিমেল টি (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "200", name: "৩/৪ হাফ ফিমেল এলবো (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "201", name: "৩/৪ হাফ ফিমেল সকেট (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "202", name: "৩/৪ অপসাইড (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "203", name: "৩/৪ ক্রসটি (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "204", name: "টেপলন টেপ (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "205", name: "ERA গাম", cat: "৩/৪ Cpvc" },
+            { id: "206", name: "25 m.m. কেবল ক্লিপ", cat: "৩/৪ Cpvc" },
+            { id: "207", name: "ওয়াল কাটার ব্লেট (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "208", name: "রড কাটার ব্লেট (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "209", name: "ডাবল আরি ব্লেট (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "210", name: "হেলদি বিট ৪ সুতা ১২ (CPVC)", cat: "৩/৪ Cpvc" },
+            { id: "211", name: "৩/৪ পাইপ (PPR)", cat: "৩/৪ PPR" },
+            { id: "212", name: "৩/৪ এলবো (PPR)", cat: "৩/৪ PPR" },
+            { id: "213", name: "৩/৪ টি (PPR)", cat: "৩/৪ PPR" },
+            { id: "214", name: "৩/৪ সকেট (PPR)", cat: "৩/৪ PPR" },
+            { id: "215", name: "৩/৪ ইউনিয়ন (PPR)", cat: "৩/৪ PPR" },
+            { id: "216", name: "৩/৪ গেইডবল (PPR)", cat: "৩/৪ PPR" },
+            { id: "217", name: "৩/৪ কেপ (PPR)", cat: "৩/৪ PPR" },
+            { id: "218", name: "৩/৪ ফিমেল সকেট (PPR)", cat: "৩/৪ PPR" },
+            { id: "219", name: "৩/৪ মেল সকেট (PPR)", cat: "৩/৪ PPR" },
+            { id: "220", name: "৩/৪ হাফ ফিমেল টি (PPR)", cat: "৩/৪ PPR" },
+            { id: "221", name: "৩/৪ হাফ ফিমেল এলবো (PPR)", cat: "৩/৪ PPR" },
+            { id: "222", name: "৩/৪ হাফ ফিমেল সকেট (PPR)", cat: "৩/৪ PPR" },
+            { id: "223", name: "৩/৪ অপসাইড (PPR)", cat: "৩/৪ PPR" },
+            { id: "224", name: "৩/৪ ক্রসটি (PPR)", cat: "৩/৪ PPR" },
+            { id: "225", name: "টেপলন টেপ (PPR)", cat: "৩/৪ PPR" },
+            { id: "226", name: "25 m.m. কেবল ক্লিপ (PPR)", cat: "৩/৪ PPR" },
+            { id: "227", name: "ওয়াল কাটার ব্লেট (PPR)", cat: "৩/৪ PPR" },
+            { id: "228", name: "রড কাটার ব্লেট (PPR)", cat: "৩/৪ PPR" },
+            { id: "229", name: "ডাবল আরি ব্লেট (PPR)", cat: "৩/৪ PPR" },
+            { id: "230", name: "হেলদি বিট ৬.৫ (PPR)", cat: "৩/৪ PPR" },
+            { id: "231", name: "হেলদি বিট ৪ সুতা ১২ (PPR)", cat: "৩/৪ PPR" },
+            { id: "232", name: "হাফ ইঞ্চি প্লাগ (PPR)", cat: "৩/৪ PPR" },
+            { id: "233", name: "৪ পাইপ", cat: "৪\"" },
+            { id: "234", name: "৪ লংট্রাপ", cat: "৪\"" },
+            { id: "235", name: "৪ শর্টট্রাপ", cat: "৪\"" },
+            { id: "236", name: "৪ বেকডোর টি", cat: "৪\"" },
+            { id: "237", name: "৪ সাইডডোর টি", cat: "৪\"" },
+            { id: "238", name: "৪ বেকডোর বেন", cat: "৪\"" },
+            { id: "239", name: "৪ সাইডডোর বেন", cat: "৪\"" },
+            { id: "240", name: "৪ ডোর সকেট", cat: "৪\"" },
+            { id: "241", name: "৪ সকেট", cat: "৪\"" },
+            { id: "242", name: "৪ অপসাইড", cat: "৪\"" },
+            { id: "243", name: "৪ প্লেন টি", cat: "৪\"" },
+            { id: "244", name: "৪ প্লেন বেন", cat: "৪\"" },
+            { id: "245", name: "৪ ক্রসটি", cat: "৪\"" },
+            { id: "246", name: "৪ Y টি", cat: "৪\"" },
+            { id: "247", name: "৪ কাউয়াল", cat: "৪\"" },
+            { id: "248", name: "৪ কেপ", cat: "৪\"" },
+            { id: "249", name: "৪ ডোর প্লাগ", cat: "৪\"" },
+            { id: "250", name: "৪ ক্লাম", cat: "৪\"" },
+            { id: "251", name: "মারকিন কাপড়", cat: "৪\"" },
+            { id: "252", name: "পাইবের গাম", cat: "৪\"" },
+            { id: "253", name: "৪ বক্স জালি", cat: "৪\"" },
+            { id: "254", name: "৪ জালি", cat: "৪\"" },
+            { id: "255", name: "৬ পাইপ", cat: "৬\"" },
+            { id: "256", name: "৬ বেকডোর টি", cat: "৬\"" },
+            { id: "257", name: "৬ সাইডডোর টি", cat: "৬\"" },
+            { id: "258", name: "৬ বেকডোর বেন", cat: "৬\"" },
+            { id: "259", name: "৬ সাইডডোর বেন", cat: "৬\"" },
+            { id: "260", name: "৬ সকেট", cat: "৬\"" },
+            { id: "261", name: "৬ অপসাইড", cat: "৬\"" },
+            { id: "262", name: "৬ কেপ", cat: "৬\"" },
+            { id: "263", name: "৬ ডোর প্লাগ", cat: "৬\"" },
+            { id: "264", name: "৬ প্লেন টি", cat: "৬\"" },
+            { id: "265", name: "৬ প্লেন বেন", cat: "৬\"" },
+            { id: "266", name: "৬ কাউয়াল", cat: "৬\"" },
+            { id: "267", name: "৬ ক্লাম", cat: "৬\"" },
+            { id: "268", name: "৬ ৪ বুশ", cat: "৬\"" },
+            { id: "269", name: "৬ ৪ সকেট", cat: "৬\"" },
+            { id: "270", name: "৬ ৪ সাইডডোর টি", cat: "৬\"" },
+            { id: "271", name: "৬ ৪ প্লেন টি", cat: "৬\"" },
+            { id: "272", name: "৬ জালি", cat: "৬\"" },
+            { id: "273", name: "ইট", cat: "৬\"" },
+            { id: "274", name: "বালু", cat: "৬\"" },
+            { id: "275", name: "রট", cat: "৬\"" },
+            { id: "276", name: "সিমেন্ট", cat: "৬\"" },
+            { id: "277", name: "কণা", cat: "৬\"" },
+            { id: "278", name: "২৪ তার", cat: "৬\"" },
+            { id: "279", name: "ফ্যানএর হুক", cat: "৬\"" },
+            { id: "280", name: "গ্লাপস", cat: "৬\"" },
+            { id: "281", name: "মাস্ক", cat: "৬\"" },
+            { id: "282", name: "কাপড়ের মুজা", cat: "৬\"" },
+            { id: "283", name: "সিংক", cat: "৬\"" },
+            { id: "284", name: "বাংলা কমেন্ট", cat: "৬\"" },
+            { id: "285", name: "বিপকর্ক", cat: "ফিনিশিং" },
+            { id: "286", name: "টুইন বিপকর্ক", cat: "ফিনিশিং" },
+            { id: "287", name: "মুভিং সাওয়ার", cat: "ফিনিশিং" },
+            { id: "288", name: "এঙ্গেল এস্টকর্ক", cat: "ফিনিশিং" },
+            { id: "289", name: "মিক্সার", cat: "ফিনিশিং" },
+            { id: "290", name: "সিংক মিক্সার", cat: "ফিনিশিং" },
+            { id: "291", name: "বেসিং মিক্সার", cat: "ফিনিশিং" },
+            { id: "292", name: "পুস সাওয়ার", cat: "ফিনিশিং" },
+            { id: "293", name: "কাপড় স্টেন", cat: "ফিনিশিং" },
+            { id: "294", name: "টিসু বক্স", cat: "ফিনিশিং" },
+            { id: "295", name: "কর্নার বক্স", cat: "ফিনিশিং" },
+            { id: "296", name: "সাবান দানি ডাবল", cat: "ফিনিশিং" },
+            { id: "297", name: "সাবান দানি সিঙ্গেল", cat: "ফিনিশিং" },
+            { id: "298", name: "বাংলা গ্লাস", cat: "ফিনিশিং" },
+            { id: "299", name: "কালেকশন পাইপ", cat: "ফিনিশিং" },
+            { id: "301", name: "লুকিং গ্লাস", cat: "ফিনিশিং" },
+            { id: "302", name: "গ্লাস ক্লিপ", cat: "ফিনিশিং" },
+            { id: "303", name: "গাইডিয়াল", cat: "ফিনিশিং" },
+            { id: "304", name: "বেসিং", cat: "ফিনিশিং" },
+            { id: "305", name: "বেসিং নাট", cat: "ফিনিশিং" },
+            { id: "306", name: "পিলারে কর্ক", cat: "ফিনিশিং" },
+            { id: "307", name: "বেসিং ওয়াইষ্ট", cat: "ফিনিশিং" },
+            { id: "308", name: "শোয়া ইঞ্চি মেজিক পাইপ", cat: "ফিনিশিং" },
+            { id: "309", name: "কুরিয়ান পুটিং", cat: "ফিনিশিং" },
+            { id: "310", name: "চকলেট পুটিং", cat: "ফিনিশিং" },
+            { id: "311", name: "টাইলস পুটিং", cat: "ফিনিশিং" },
+            { id: "312", name: "সিংক কর্ক", cat: "ফিনিশিং" },
+            { id: "313", name: "সিংক ওয়াইষ্ট", cat: "ফিনিশিং" },
+            { id: "314", name: "দেড় ইঞ্চি মেজিক পাইপ", cat: "ফিনিশিং" },
+            { id: "315", name: "লম্বা বিপকর্ক", cat: "ফিনিশিং" },
+            { id: "316", name: "লিকুইট বক্স", cat: "ফিনিশিং" },
+            { id: "317", name: "রিং টাওলি", cat: "ফিনিশিং" },
+            { id: "318", name: "ইংলিশ কমেট", cat: "ফিনিশিং" },
+            { id: "319", name: "ইংলিশ কমেটের গেসকেট", cat: "ফিনিশিং" },
+            { id: "320", name: "ইংলিশ কমেটের নাট", cat: "ফিনিশিং" },
+            { id: "321", name: "সিলিকন", cat: "ফিনিশিং" },
+            { id: "322", name: "মারকার", cat: "ফিনিশিং" },
+            { id: "323", name: "৬.৫ বিট", cat: "ফিনিশিং" },
+            { id: "324", name: "৫ ইসটিল পেরাগ", cat: "ফিনিশিং" },
+            { id: "325", name: "১ স্ক্রুবের ওয়াশার", cat: "ফিনিশিং" },
+            { id: "326", name: "সিলিং ঝর্ণা", cat: "ফিনিশিং" },
+            { id: "327", name: "হেনড সাওয়ার", cat: "ফিনিশিং" },
+            { id: "328", name: "রয়েল প্লাগ", cat: "ফিনিশিং" },
+            { id: "329", name: "৪ সুতা ৮ বিট", cat: "ফিনিশিং" }
+        ];
+
+        // ==================== ইলেকট্রনিক মালামাল ====================
+        const electronicProducts = [
+            { id: "E1", name: "১.০ মিমি কপার তার", cat: "কপার তার", unit: "রোল" },
+            { id: "E2", name: "১.৫ মিমি কপার তার", cat: "কপার তার", unit: "রোল" },
+            { id: "E3", name: "২.৫ মিমি কপার তার", cat: "কপার তার", unit: "রোল" },
+            { id: "E4", name: "৪.০ মিমি কপার তার", cat: "কপার তার", unit: "রোল" },
+            { id: "E5", name: "৬.০ মিমি কপার তার", cat: "কপার তার", unit: "রোল" },
+            { id: "E6", name: "১০ মিমি কপার তার", cat: "কপার তার", unit: "রোল" },
+            { id: "E7", name: "আর্থ তার", cat: "কপার তার", unit: "রোল" },
+            { id: "E8", name: "PVC পাইপ ২০ মিমি", cat: "পাইপ ও কন্ডুইট", unit: "পিস" },
+            { id: "E9", name: "PVC পাইপ ২৫ মিমি", cat: "পাইপ ও কন্ডুইট", unit: "পিস" },
+            { id: "E10", name: "ফ্লেক্সিবল পাইপ", cat: "পাইপ ও কন্ডুইট", unit: "পিস" },
+            { id: "E11", name: "জংশন বক্স", cat: "বক্স ও ক্ল্যাম্প", unit: "পিস" },
+            { id: "E12", name: "২ ওয়ে বক্স", cat: "বক্স ও ক্ল্যাম্প", unit: "পিস" },
+            { id: "E13", name: "৩ ওয়ে বক্স", cat: "বক্স ও ক্ল্যাম্প", unit: "পিস" },
+            { id: "E14", name: "৪ ওয়ে বক্স", cat: "বক্স ও ক্ল্যাম্প", unit: "পিস" },
+            { id: "E15", name: "স্যাডেল ক্ল্যাম্প", cat: "বক্স ও ক্ল্যাম্প", unit: "পিস" },
+            { id: "E16", name: "১ গ্যাং বক্স", cat: "গ্যাং বক্স", unit: "পিস" },
+            { id: "E17", name: "২ গ্যাং বক্স", cat: "গ্যাং বক্স", unit: "পিস" },
+            { id: "E18", name: "৪ গ্যাং বক্স", cat: "গ্যাং বক্স", unit: "পিস" },
+            { id: "E19", name: "৬ গ্যাং বক্স", cat: "গ্যাং বক্স", unit: "পিস" },
+            { id: "E20", name: "৮ গ্যাং বক্স", cat: "গ্যাং বক্স", unit: "পিস" },
+            { id: "E21", name: "১ ওয়ে সুইচ", cat: "সুইচ ও সকেট", unit: "পিস" },
+            { id: "E22", name: "২ ওয়ে সুইচ", cat: "সুইচ ও সকেট", unit: "পিস" },
+            { id: "E23", name: "বেল সুইচ", cat: "সুইচ ও সকেট", unit: "পিস" },
+            { id: "E24", name: "বেড সুইচ", cat: "সুইচ ও সকেট", unit: "পিস" },
+            { id: "E25", name: "ফ্যান রেগুলেটর", cat: "সুইচ ও সকেট", unit: "পিস" },
+            { id: "E26", name: "৩ পিন সকেট", cat: "সুইচ ও সকেট", unit: "পিস" },
+            { id: "E27", name: "৫ পিন সকেট", cat: "সুইচ ও সকেট", unit: "পিস" },
+            { id: "E28", name: "১৬ আম্প সকেট", cat: "সুইচ ও সকেট", unit: "পিস" },
+            { id: "E29", name: "প্লাগ টপ", cat: "সুইচ ও সকেট", unit: "পিস" },
+            { id: "E30", name: "ডিস্ট্রিবিউশন বোর্ড", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E31", name: "মেইন সুইচ", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E32", name: "MCB 6A", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E33", name: "MCB 10A", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E34", name: "MCB 16A", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E35", name: "MCB 20A", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E36", name: "MCB 32A", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E37", name: "RCCB", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E38", name: "SPD সার্জ প্রটেকশন", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E39", name: "মিটার বোর্ড", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E40", name: "কাটকট ফিউজ", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E41", name: "ফিউজ বেস", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E42", name: "ফিউজ ক্যারিয়ার", cat: "ডিস্ট্রিবিউশন ও প্রটেকশন", unit: "পিস" },
+            { id: "E43", name: "LED বাল্ব", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E44", name: "LED টিউবলাইট", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E45", name: "প্যানেল লাইট", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E46", name: "ডাউন লাইট", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E47", name: "বাল্ব হোল্ডার", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E48", name: "সিলিং রোজ", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E49", name: "সিলিং ফ্যান", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E50", name: "এক্সহস্ট ফ্যান", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E51", name: "ফ্যান হুক", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E52", name: "ফ্যান বক্স", cat: "লাইট ও ফ্যান", unit: "পিস" },
+            { id: "E53", name: "আর্থ রড", cat: "আর্থিং", unit: "পিস" },
+            { id: "E54", name: "GI পাইপ", cat: "আর্থিং", unit: "পিস" },
+            { id: "E55", name: "আর্থ ক্ল্যাম্প", cat: "আর্থিং", unit: "পিস" },
+            { id: "E56", name: "চারকোল", cat: "আর্থিং", unit: "কেজি" },
+            { id: "E57", name: "লবণ", cat: "আর্থিং", unit: "কেজি" },
+            { id: "E58", name: "ইনসুলেশন টেপ", cat: "সরঞ্জাম", unit: "পিস" },
+            { id: "E59", name: "কেবল টাই", cat: "সরঞ্জাম", unit: "প্যাকেট" },
+            { id: "E60", name: "ওয়াল প্লাগ", cat: "সরঞ্জাম", unit: "প্যাকেট" },
+            { id: "E61", name: "স্ক্রু", cat: "সরঞ্জাম", unit: "প্যাকেট" },
+            { id: "E62", name: "তার ক্লিপ", cat: "সরঞ্জাম", unit: "প্যাকেট" },
+            { id: "E63", name: "টার্মিনাল ব্লক", cat: "সরঞ্জাম", unit: "পিস" },
+            { id: "E64", name: "কেবল লগ", cat: "সরঞ্জাম", unit: "পিস" },
+            { id: "E65", name: "ফেকূল", cat: "সরঞ্জাম", unit: "পিস" },
+            { id: "E66", name: "কলিং বেল", cat: "সরঞ্জাম", unit: "পিস" },
+            { id: "E67", name: "টিভি সকেট", cat: "নেটওয়ার্ক ও কমিউনিকেশন", unit: "পিস" },
+            { id: "E68", name: "LAN সকেট", cat: "নেটওয়ার্ক ও কমিউনিকেশন", unit: "পিস" },
+            { id: "E69", name: "CCTV পয়েন্ট", cat: "নেটওয়ার্ক ও কমিউনিকেশন", unit: "পয়েন্ট" },
+            { id: "E70", name: "Wi-Fi পয়েন্ট", cat: "নেটওয়ার্ক ও কমিউনিকেশন", unit: "পয়েন্ট" }
+        ];
+
+        // ==================== State ====================
+        let currentMainTab = 'sanitary';
+        let currentCategory = 'all';
+        let quantities = {};
+        let currentProducts = sanitaryProducts;
+        let customProducts = []; // কাস্টম মালামাল এখানে জমা হবে
+
+        // ==================== Tab Switching ====================
+        function switchMainTab(tab) {
+            currentMainTab = tab;
+            currentCategory = 'all';
+
+            const tabSanitary = document.getElementById('tabSanitary');
+            const tabElectronic = document.getElementById('tabElectronic');
+            const categorySanitary = document.getElementById('categoryFilterSanitary');
+            const categoryElectronic = document.getElementById('categoryFilterElectronic');
+            const printTitle = document.getElementById('printTitle');
+            const printSubtitle = document.getElementById('printSubtitle');
+
+            [tabSanitary, tabElectronic].forEach(t => {
+                t.classList.remove('tab-active');
+                t.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+            });
+
+            categorySanitary.style.display = 'none';
+            categoryElectronic.style.display = 'none';
+
+            if (tab === 'sanitary') {
+                tabSanitary.classList.add('tab-active');
+                tabSanitary.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                categorySanitary.style.display = 'flex';
+                currentProducts = sanitaryProducts;
+                printTitle.innerText = 'স্যানিটারি মালামালের কাজের তালিকা';
+                printSubtitle.innerText = 'প্রস্তুতকারী: স্যানিটারি ইঞ্জিনিয়ার';
+            } else if (tab === 'electronic') {
+                tabElectronic.classList.add('tab-active');
+                tabElectronic.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                categoryElectronic.style.display = 'flex';
+                currentProducts = electronicProducts;
+                printTitle.innerText = 'ইলেকট্রনিক মালামালের কাজের তালিকা';
+                printSubtitle.innerText = 'প্রস্তুতকারী: ইলেকট্রিশিয়ান';
+            }
+
+            document.getElementById('searchInput').value = '';
+
+            // ক্যাটাগরি বাটন রিসেট
+            document.querySelectorAll('.cat-btn, .cat-btn-e').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            const firstBtn = tab === 'sanitary' 
+                ? document.querySelector('#categoryFilterSanitary .cat-btn')
+                : document.querySelector('#categoryFilterElectronic .cat-btn-e');
+            if (firstBtn) {
+                firstBtn.classList.add('active', 'bg-blue-600', 'text-white');
+                firstBtn.classList.remove('bg-gray-100', 'text-gray-700');
+            }
+
+            renderProducts();
+            updateSummary();
+        }
+
+        // ==================== Render Products ====================
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            // মূল প্রোডাক্ট এবং কাস্টম প্রোডাক্ট একসাথে দেখাবে
+            const allDisplayProducts = [...currentProducts, ...customProducts];
+
+            const filtered = allDisplayProducts.filter(p => {
+                const matchesCat = (currentCategory === 'all' || p.cat === currentCategory);
+                const matchesSearch = p.name.toLowerCase().includes(searchTerm) || p.id.toLowerCase().includes(searchTerm);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl">
+                        <i class="fa-solid fa-circle-exclamation text-3xl mb-2 text-yellow-500"></i>
+                        <p>কোনো মালামাল খুঁজে পাওয়া যায়নি!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(product => {
+                const key = currentMainTab + '_' + product.id;
+                const qty = quantities[key] ? quantities[key].qty : '';
+                const unit = product.unit || 'টি/ফুট';
+                const isCustom = product.cat === 'নিজের যোগ করা';
+                
+                const card = document.createElement('div');
+                // কাস্টম হলে একটু আলাদা রঙ
+                card.className = `bg-white p-4 rounded-xl border ${isCustom ? 'border-yellow-300 bg-yellow-50' : 'border-gray-100'} shadow-sm hover:shadow-md transition flex items-center justify-between gap-3`;
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 rounded-lg ${isCustom ? 'bg-yellow-200 text-yellow-700' : 'bg-blue-50 text-blue-600'} flex items-center justify-center font-bold text-xs shrink-0">
+                            ${product.id}
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="font-semibold text-gray-800 text-sm leading-tight">${product.name}</h3>
+                            <span class="text-xs ${isCustom ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-100 text-gray-400'} px-2 py-0.5 rounded-full inline-block mt-1">${product.cat}</span>
+                        </div>
+                    </div>
+                    <div class="w-24 shrink-0">
+                        <input type="number" min="0" value="${qty}" placeholder="পরিমাণ" 
+                               oninput="updateQuantity('${product.id}', this.value, '${unit}')"
+                               class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ==================== Update Quantity ====================
+        function updateQuantity(id, val, unit) {
+            const key = currentMainTab + '_' + id;
+            const num = parseInt(val);
+            if (num > 0) {
+                quantities[key] = { id: id, qty: num, unit: unit || 'টি/ফুট', tab: currentMainTab };
+            } else {
+                delete quantities[key];
+            }
+            updateSummary();
+        }
+
+        // ==================== Update Summary ====================
+        function updateSummary() {
+            const summaryList = document.getElementById('summaryList');
+            const printTableBody = document.getElementById('printTableBody');
+            const totalItemsCount = document.getElementById('totalItemsCount');
+            
+            summaryList.innerHTML = '';
+            printTableBody.innerHTML = '';
+
+            const keys = Object.keys(quantities).filter(k => k.startsWith(currentMainTab + '_'));
+            totalItemsCount.innerText = `${keys.length} টি আইটেম`;
+
+            if (keys.length === 0) {
+                summaryList.innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fa-solid fa-box-open text-4xl mb-2"></i>
+                        <p>এখনো কোনো মালামাল যুক্ত করা হয়নি।</p>
+                        <p class="text-xs">তালিকা থেকে পরিমাণ লিখুন।</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const allDisplayProducts = [...currentProducts, ...customProducts];
+
+            keys.forEach((key, index) => {
+                const item = quantities[key];
+                const product = allDisplayProducts.find(p => p.id === item.id);
+                if (!product) return;
+
+                const isCustom = product.cat === 'নিজের যোগ করা';
+                const badgeColor = isCustom ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800';
+
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border border-gray-100 text-sm';
+                itemEl.innerHTML = `
+                    <div class="truncate pr-2 min-w-0">
+                        <div class="font-medium text-gray-700 truncate">${product.name}</div>
+                        <span class="text-[10px] ${badgeColor} px-1.5 py-0.5 rounded">${product.cat}</span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="bg-blue-100 text-blue-800 font-bold px-2.5 py-1 rounded text-xs">${item.qty} ${item.unit}</span>
+                        <button onclick="removeItem('${key}')" class="text-gray-400 hover:text-red-500 p-1">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                summaryList.appendChild(itemEl);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="border border-gray-300 px-4 py-2 text-center">${index + 1}</td>
+                    <td class="border border-gray-300 px-4 py-2">${product.name} <span class="text-xs text-gray-500">(${product.cat})</span></td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold">${item.qty} ${item.unit}</td>
+                `;
+                printTableBody.appendChild(tr);
+            });
+        }
+
+        function removeItem(key) {
+            delete quantities[key];
+            renderProducts();
+            updateSummary();
+        }
+
+        function clearAll() {
+            const msg = currentMainTab === 'sanitary' ? 'স্যানিটারি মালামালের সমস্ত হিসাব মুছে ফেলতে চান?' : 'ইলেকট্রনিক মালামালের সমস্ত হিসাব মুছে ফেলতে চান?';
+            if (!confirm(msg)) return;
+
+            Object.keys(quantities).forEach(key => {
+                if (key.startsWith(currentMainTab + '_')) {
+                    delete quantities[key];
+                }
+            });
+            renderProducts();
+            updateSummary();
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            const isElectronic = currentMainTab === 'electronic';
+            const selector = isElectronic ? '.cat-btn-e' : '.cat-btn';
+            
+            document.querySelectorAll(selector).forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            event.target.classList.add('active', 'bg-blue-600', 'text-white');
+            event.target.classList.remove('bg-gray-100', 'text-gray-700');
+            renderProducts();
+        }
+
+        function filterProducts() { renderProducts(); }
+
+        // ==================== নিজের ইচ্ছামতো মালামাল যোগ ====================
+        function addCustomProduct() {
+            const nameInput = document.getElementById('customName');
+            const unitInput = document.getElementById('customUnit');
+            const qtyInput = document.getElementById('customQty');
+            
+            const name = nameInput.value.trim();
+            const unit = unitInput.value;
+            const qty = parseInt(qtyInput.value) || 1;
+            
+            if (!name) {
+                alert('❌ মালামালের নাম লিখুন!');
+                nameInput.focus();
+                return;
+            }
+
+            const customId = 'C' + (customProducts.length + 1);
+            const newProduct = {
+                id: customId,
+                name: name,
+                cat: 'নিজের যোগ করা',
+                unit: unit
+            };
+            
+            customProducts.push(newProduct);
+            
+            // সরাসরি হিসাব তালিকায় যোগ করে দাও
+            const key = currentMainTab + '_' + customId;
+            quantities[key] = { id: customId, qty: qty, unit: unit, tab: currentMainTab };
+            
+            // রেন্ডার আপডেট
+            renderProducts();
+            updateSummary();
+            
+            // ইনপুট ক্লিয়ার
+            nameInput.value = '';
+            qtyInput.value = '1';
+            nameInput.focus();
+
+            // সাকসেস নোটিফিকেশন
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-24 right-5 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 text-sm';
+            toast.innerHTML = '<i class="fa-solid fa-check-circle"></i> সফলভাবে যোগ হয়েছে!';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        // Enter কি চাপলে যোগ হবে
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.getElementById('customName');
+            if (nameInput) {
+                nameInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') addCustomProduct();
+                });
+            }
+        });
+
+        // ==================== Init ====================
+        window.onload = () => {
+            renderProducts();
+            document.getElementById('printDate').innerText = new Date().toLocaleDateString('bn-BD');
+        };
+    </script>
+</body>
+</html>
